@@ -9,7 +9,7 @@ import {
   MenuItems
 } from "@headlessui/react";
 import { Bars3Icon, BellIcon, XMarkIcon, UserCircleIcon } from "@heroicons/react/24/outline";
-import { NavLink, useNavigate, useLocation } from "react-router-dom";
+import { NavLink, useNavigate, useLocation } from "react-router-dom"; // NavLinkProps tidak perlu diimpor jika kita menyederhanakan
 import { useAuth } from "../utils/AuthProvider";
 
 const navigation = [
@@ -24,6 +24,13 @@ function classNames(...classes: (string | boolean)[]) {
   return classes.filter(Boolean).join(" ");
 }
 
+// Definisikan tipe untuk parameter fungsi className
+interface NavLinkRenderArgs {
+  isActive: boolean;
+  isPending: boolean;
+  isTransitioning?: boolean; // isTransitioning adalah opsional
+}
+
 // Komponen MobileNavLink (tidak ada perubahan, ini sudah benar dari sebelumnya)
 const MobileNavLink = ({ to, children }: { to: string; children: React.ReactNode }) => {
   const location = useLocation();
@@ -36,7 +43,7 @@ const MobileNavLink = ({ to, children }: { to: string; children: React.ReactNode
         isActive ? 'bg-blue-800 text-white' : 'text-blue-100 hover:bg-blue-600 hover:text-white',
         'block rounded-md px-3 py-2 text-base font-medium transition-colors'
       )}
-      aria-current={isActive ? "page" : undefined}
+      aria-current={isActive ? "page" : undefined} // Ini sudah benar untuk NavLink biasa
     >
       {children}
     </NavLink>
@@ -63,12 +70,6 @@ const Navbar = () => {
               <div className="flex items-center">
                 <div className="flex-shrink-0">
                   <NavLink to="/" className="flex items-center space-x-2">
-                    {/* Anda bisa menambahkan img logo di sini jika mau */}
-                    {/* <img
-                      className="h-8 w-auto"
-                      src="https://tailwindui.com/img/logos/mark.svg?color=white"
-                      alt="Portal Mahasiswa"
-                    /> */}
                     <span className="text-white font-semibold text-lg hidden sm:block">
                       Portal MHS
                     </span>
@@ -76,35 +77,28 @@ const Navbar = () => {
                 </div>
                 <div className="hidden sm:ml-8 sm:block">
                   <div className="flex space-x-4">
-                    {/* =========================================== */}
-                    {/* === AWAL PERBAIKAN BAGIAN NAVLINK UTAMA === */}
-                    {/* =========================================== */}
                     {navigation.map((item) => (
                       <NavLink
                         key={item.name}
                         to={item.to}
-                        // Fungsi className menerima objek { isActive, isPending, isTransitioning }
-                        // Kita bisa destrukturisasi langsung di parameter
-                        className={({ isActive, isPending }) => // Ambil isActive dan isPending
+                        className={({ isActive, isPending }: NavLinkRenderArgs) =>
                           classNames(
                             isActive
-                              ? "bg-blue-800 text-white" // Kelas untuk link aktif
-                              : "text-blue-100 hover:bg-blue-600 hover:text-white", // Kelas untuk link tidak aktif
-                            isPending ? "opacity-50 cursor-wait" : "", // Contoh kelas untuk status pending (jika ada lazy loading)
+                              ? "bg-blue-800 text-white"
+                              : "text-blue-100 hover:bg-blue-600 hover:text-white",
+                            isPending ? "opacity-50 cursor-wait" : "",
                             "rounded-md px-3 py-2 text-sm font-medium transition-colors"
                           )
                         }
-                        // Fungsi aria-current juga menerima objek yang sama
-                        aria-current={({ isActive }) => // Hanya perlu isActive di sini
-                          isActive ? "page" : undefined
-                        }
+                        // Hapus prop aria-current di sini.
+                        // NavLink akan otomatis mengaturnya berdasarkan isActive.
+                        // aria-current={({ isActive }: { isActive: boolean }) =>
+                        //   isActive ? "page" : undefined
+                        // }
                       >
                         {item.name}
                       </NavLink>
                     ))}
-                    {/* ========================================= */}
-                    {/* === AKHIR PERBAIKAN BAGIAN NAVLINK UTAMA === */}
-                    {/* ========================================= */}
                   </div>
                 </div>
               </div>
@@ -146,20 +140,22 @@ const Navbar = () => {
                         </div>
                         <div className="border-t border-gray-200"></div>
                         <MenuItem>
-                          {({ active }) => (
+                          {({ active }: { active: boolean }) => (
                             <NavLink
                               to="/profile"
                               className={classNames(
                                 active ? 'bg-gray-100' : '',
                                 'block px-4 py-2 text-sm text-gray-700'
                               )}
+                              // aria-current di sini juga akan otomatis ditangani jika ini NavLink
+                              // Jika ini adalah link biasa, maka Anda harus set manual jika perlu
                             >
                               Profil Anda
                             </NavLink>
                           )}
                         </MenuItem>
                         <MenuItem>
-                          {({ active }) => (
+                          {({ active }: { active: boolean }) => (
                             <NavLink
                               to="/settings"
                               className={classNames(
@@ -172,7 +168,7 @@ const Navbar = () => {
                           )}
                         </MenuItem>
                         <MenuItem>
-                          {({ active }) => (
+                          {({ active }: { active: boolean }) => (
                             <button
                               onClick={handleLogout}
                               className={classNames(
